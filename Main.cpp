@@ -56,7 +56,7 @@ int main(){
                           convert >> element;
                           counter++;
                           delete input;
-                          addHeap(element, heap);
+                          head = addTree(element, head);
                   }
              }
      }
@@ -72,7 +72,7 @@ int main(){
           }
           int x;
           while(inFile >> x){
-               addTree(x, head);
+               head = addTree(x, head);
           }
           printTree(head);
           delete input;
@@ -105,7 +105,31 @@ int main(){
 }
 
 //Add an input element into the tree
-void addTree(int element, Node* head){
-     Node* current = head;
-
+struct node* addTree(int element, Node* &current){
+     //If there isn't anything in the tree yet
+     if(current == NULL){
+          return(newNode(element));
+     }
+     //Keep going down the tree until it finds the right spot
+     else{
+          //If the new element is less than the current node then it needs to go down
+          if(element <= node->data){
+               node->left = insert(element, node->left);
+          }
+          //Otherwise it needs to go left
+          else{
+               node->right = insert(element, node->right);
+          }
+          //return the node pointer to make the recursion work
+          return node;
+     }
+         
+}
+//Shortcut to initialize new nodes as they are created
+struct Node* newNode(int data){
+     struct Node* node = new struct Node();
+     node->data = data;
+     node->right = NULL;
+     node->left = NULL;
+     return node;
 }
