@@ -12,9 +12,10 @@ struct Node{
      Node* right;
 };
 
-void addTree(int element, Node* head);
+stuct Node* addTree(int element, Node* &current);
 void printTree(Node* head);
-bool deleteHeap(Node* head);
+bool deleteElement(Node* head, int element);
+struct Node* newNode(int element);
 
 using namespace std;
 
@@ -105,7 +106,7 @@ int main(){
 }
 
 //Add an input element into the tree
-struct node* addTree(int element, Node* &current){
+struct Node* addTree(int element, Node* &current){
      //If there isn't anything in the tree yet
      if(current == NULL){
           return(newNode(element));
@@ -113,15 +114,15 @@ struct node* addTree(int element, Node* &current){
      //Keep going down the tree until it finds the right spot
      else{
           //If the new element is less than the current node then it needs to go down
-          if(element <= node->data){
-               node->left = insert(element, node->left);
+          if(element <= current->data){
+               current->left = addTree(element, current->left);
           }
           //Otherwise it needs to go left
           else{
-               node->right = insert(element, node->right);
+               current->right = addTree(element, current->right);
           }
           //return the node pointer to make the recursion work
-          return node;
+          return current;
      }
          
 }
@@ -132,4 +133,93 @@ struct Node* newNode(int data){
      node->right = NULL;
      node->left = NULL;
      return node;
+}
+//Print out the tree in nice tree form
+void printTree(Node* node, int indentation){
+     if(node != NULL){
+          //Get the indentation in the right place
+          if(indentation)
+               cout << std::setw(indentation) << ' ';
+          cout << node->data << '\n';
+          //Recursively call on the left
+          if(node->left){
+               printTree(node->left, indentation+4);
+          }
+          //Recursively call on the left
+          if(node->right){
+               printTree(node->right, indentation+4);
+          }
+     }
+}
+//Remove a single element from the tree
+bool deleteElement(Node* &current, int element){
+     //If there is nothing in the tree
+     if(current == NULL){
+          return false;
+     }
+     //Otherwise check the element of the tree for the value
+     else{
+          //Check the current node for the value
+          if(current->data == element){
+               current->data == NULL;
+               fixTree(current);
+               return true;
+          }
+          //Keep going down the tree looking for the value
+          else{
+               //Go down the correct sides of the subtree looking for the value
+               if(target < current->data){
+                    return deleteElement(current->left, element);
+               }
+               else{
+                       return deleteElement(current->right, element);
+               }
+          }
+     }
+
+}
+//Fix tree so that its right
+void fixTree(Node* &current){
+        //If there exists a right subtree than bring up the min value from that subtree
+        if(current->right != NULL){
+             int minimum = current->right->data;
+             Node* min = current->right;
+             Node* node = current->right;
+             while(node != NULL){
+                     //Find the minimum value from the right subtree
+                     if(node->left != NULL){
+                          node = node->left;
+                          if(node->data < minimum){
+                                  minimum = node->data;
+                                  min = node;
+                         }
+                     }
+                     else{
+                             break;
+                     }
+             }
+        }
+        //Otherwise its going to have to take the max value from the left subtree
+        else{
+               int minimum = current->left->data;
+               Node* min = current->left;
+               Node* node = current->left;
+               while(node->right != NULL){
+                    node = node->right;
+                    //The min is backwards but its fine it makes it easier
+                    if(node->data > minimum){
+                         minimum = node->data;
+                         min = node;
+                    }
+               }
+        }
+    //Go through and take the data from the min node and put it into the current node and maybe readjust
+    current->data = minimum;
+    //If there are children readjust it otherwise just destroy the node
+     if(min->left != NULL || min->right != NULL){
+          fixTree(min);    
+     }
+     else{
+          delete min;
+     }
 }
