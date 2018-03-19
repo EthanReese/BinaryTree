@@ -5,6 +5,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
+#include <fstream>
+#include <iomanip>
 
 struct Node{
      int data;
@@ -12,10 +15,11 @@ struct Node{
      Node* right;
 };
 
-stuct Node* addTree(int element, Node* &current);
-void printTree(Node* head);
-bool deleteElement(Node* head, int element);
+struct Node* addTree(int element, Node* &current);
+void printTree(Node* head, int indentation);
+bool deleteElement(Node* &head, int element);
 struct Node* newNode(int element);
+void fixTree(Node* &current);
 
 using namespace std;
 
@@ -39,12 +43,12 @@ int main(){
                   if(strcmp(input, "N") == 0){
                        going = false;
                        delete input;
-                       printTree(head);
+                       printTree(head, 0);
                   }
                   else if(counter == 100){
                        going = false;
                        delete input;
-                       printTree(head);
+                       printTree(head, 0);
                   }
                   else if(strcmp(input, "0") == 0){
                        //If its zero is screws things up so just ignore it since its not in the range anyway.
@@ -75,7 +79,7 @@ int main(){
           while(inFile >> x){
                head = addTree(x, head);
           }
-          printTree(head);
+          printTree(head, 0);
           delete input;
      }
          cout << "Enter any integers that you would like to delete from the tree and type 'done' to quit and 'print' to print";
@@ -89,16 +93,16 @@ int main(){
                delete input_1;
           }
           else if(strcmp(input, "print") == 0){
-               printTree(head);
+               printTree(head, 20);
           }
           else{
                stringstream convert;
                convert << input;
                int number = 0;
                convert >> number;
-               delete input;
+               delete[] input;
                //If the number is in the tree then we're all good, but if it isn't give the user a heads up
-               if(!deleteTree(number, head){
+               if(!deleteElement(head, number)){
                     cout << "That value is not in the tree" << endl;
                }
           }
@@ -143,9 +147,9 @@ void printTree(Node* node, int indentation){
           cout << node->data << '\n';
           //Recursively call on the left
           if(node->left){
-               printTree(node->left, indentation+4);
+               printTree(node->left, indentation-6);
           }
-          //Recursively call on the left
+          //Recursively call on the right
           if(node->right){
                printTree(node->right, indentation+4);
           }
@@ -161,14 +165,14 @@ bool deleteElement(Node* &current, int element){
      else{
           //Check the current node for the value
           if(current->data == element){
-               current->data == NULL;
+               current->data = 0;
                fixTree(current);
                return true;
           }
           //Keep going down the tree looking for the value
           else{
                //Go down the correct sides of the subtree looking for the value
-               if(target < current->data){
+               if(element < current->data){
                     return deleteElement(current->left, element);
                }
                else{
@@ -180,18 +184,25 @@ bool deleteElement(Node* &current, int element){
 }
 //Fix tree so that its right
 void fixTree(Node* &current){
+        int minimum = 0;
+        Node* min = current;
+        Node* node = current;
+        Node* minPar = current;
         //If there exists a right subtree than bring up the min value from that subtree
         if(current->right != NULL){
-             int minimum = current->right->data;
-             Node* min = current->right;
-             Node* node = current->right;
+             minimum = current->right->data;
+             min = current->right;
+             node = current->right;
+             minPar = current;
              while(node != NULL){
                      //Find the minimum value from the right subtree
                      if(node->left != NULL){
+                         Node* temp = node;
                           node = node->left;
                           if(node->data < minimum){
                                   minimum = node->data;
                                   min = node;
+                                  minPar = temp;
                          }
                      }
                      else{
@@ -200,26 +211,40 @@ void fixTree(Node* &current){
              }
         }
         //Otherwise its going to have to take the max value from the left subtree
-        else{
-               int minimum = current->left->data;
-               Node* min = current->left;
-               Node* node = current->left;
+        else if(current->left != NULL){
+               minimum = current->left->data;
+               min = current->left;
+               node = current->left;
+               minPar = current;
                while(node->right != NULL){
+                    Node* temp = node;
                     node = node->right;
                     //The min is backwards but its fine it makes it easier
                     if(node->data > minimum){
+                         minPar = temp;
                          minimum = node->data;
                          min = node;
                     }
                }
         }
+        //Otherwise its the very bottom so it can just delete
+        else{
+               delete current;
+               current = NULL;
+               return;
+        }
     //Go through and take the data from the min node and put it into the current node and maybe readjust
     current->data = minimum;
+    min -> data = 0;
     //If there are children readjust it otherwise just destroy the node
-     if(min->left != NULL || min->right != NULL){
-          fixTree(min);    
+     if(min->left != NULL || min->right != NULL){ 
+             fixTree(min);
      }
      else{
+          //In hindsight if I had thought this through better it would all be redundant
+          if(minPar->left == min) minPar->left = NULL;
+          if(minPar->right == min) minPar->right = NULL;
           delete min;
+          min = NULL;
      }
 }
