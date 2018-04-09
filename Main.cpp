@@ -7,7 +7,9 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <iomanip>
+#include <deque>
+#include <list>
+#include <queue>
 
 struct Node{
      int data;
@@ -16,7 +18,7 @@ struct Node{
 };
 
 struct Node* addTree(int element, Node* &current);
-void printTree(Node* head, int indentation);
+void printTree(Node* head);
 bool deleteElement(Node* &head, int element);
 struct Node* newNode(int element);
 void fixTree(Node* &current);
@@ -43,12 +45,12 @@ int main(){
                   if(strcmp(input, "N") == 0){
                        going = false;
                        delete input;
-                       printTree(head, 0);
+                       printTree(head);
                   }
                   else if(counter == 100){
                        going = false;
                        delete input;
-                       printTree(head, 0);
+                       printTree(head);
                   }
                   else if(strcmp(input, "0") == 0){
                        //If its zero is screws things up so just ignore it since its not in the range anyway.
@@ -79,7 +81,7 @@ int main(){
           while(inFile >> x){
                head = addTree(x, head);
           }
-          printTree(head, 0);
+          printTree(head);
           delete input;
      }
          cout << "Enter any integers that you would like to delete from the tree and type 'done' to quit and 'print' to print";
@@ -93,7 +95,7 @@ int main(){
                delete input_1;
           }
           else if(strcmp(input, "print") == 0){
-               printTree(head, 20);
+               printTree(head);
           }
           else{
                stringstream convert;
@@ -139,20 +141,37 @@ struct Node* newNode(int data){
      return node;
 }
 //Print out the tree in nice tree form
-void printTree(Node* node, int indentation){
-     if(node != NULL){
-          //Get the indentation in the right place
-          if(indentation)
-               cout << std::setw(indentation) << ' ';
-          cout << node->data << '\n';
-          //Recursively call on the left
-          if(node->left){
-               printTree(node->left, indentation-6);
+void printTree(Node* node){
+     queue<Node*> q;
+     q.push(node);
+     cout << "Tree: " << endl;
+
+     bool moreonlevel = true;
+     //Keep going while there are still nodes on the level.
+     while(moreonlevel){
+          int levelCount = q.size();
+          moreonlevel = false;
+          while(levelCount > 0){
+                  Node* n = q.front();
+                  q.pop();
+                  if(n == NULL){
+                         cout << "_ ";
+                         q.push(NULL);
+                         q.push(NULL);
+                  }
+                  else{
+                          //Say that there are more nodes that can be checked and add the proper nodes to the tree.
+                          moreonlevel = true;
+                          cout << n->data << " ";
+                          q.push(n->left);
+                          q.push(n->right);
+                  }
+                  //It went through one of the levels so take the counter down.
+                  levelCount--; 
           }
-          //Recursively call on the right
-          if(node->right){
-               printTree(node->right, indentation+4);
-          }
+          //End of a tree level
+          cout << endl;
+
      }
 }
 //Remove a single element from the tree
